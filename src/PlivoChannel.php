@@ -62,6 +62,8 @@ class PlivoChannel
             trim($message->content),
             ['url' => $message->webhook ?: $this->webhook]
         );
+        
+        $response->message = $message;
 
         if ($response->statusCode !== 202) {
             throw CouldNotSendNotification::serviceRespondedWithAnError($response);
