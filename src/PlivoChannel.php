@@ -46,7 +46,7 @@ class PlivoChannel
      */
     public function send($notifiable, Notification $notification)
     {
-        if (! $to = $notifiable->routeNotificationFor('plivo')) {
+        if (!$to = $notifiable->routeNotificationFor('plivo')) {
             return;
         }
 
@@ -56,14 +56,16 @@ class PlivoChannel
             $message = new PlivoMessage($message);
         }
 
-        $response = $this->plivo->send_message([
-            'src' => $message->from ?: $this->from,
-            'dst' => $to,
-            'text' => trim($message->content),
-            'url' => $message->webhook ?: $this->webhook,
-        ]);
+        $response = $this->plivo->messages->create(
+            $message->from ?: $this->from,
+            [$to],
+            trim($message->content),
+            ['url' => $message->webhook ?: $this->webhook]
+        );
+        
+        $response->message = $message;
 
-        if ($response['status'] !== 202) {
+        if ($response->statusCode !== 202) {
             throw CouldNotSendNotification::serviceRespondedWithAnError($response);
         }
 
